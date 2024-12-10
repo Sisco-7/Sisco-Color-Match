@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisco Color Matching Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(to bottom right, #282c34, #4CAF50);
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            padding: 20px 0;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .game-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+        .color-box {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 10px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .color-box:hover {
+            transform: scale(1.1);
+        }
+        input[type="range"] {
+            width: 80%;
+            margin: 10px 0;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        #message {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        footer {
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        .score {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sisco Color Matching Game</h1>
+        <p>Match the target color to win points!</p>
+    </header>
+    <div class="game-container">
+        <h2>Select Difficulty Level</h2>
+        <select id="difficulty" onchange="setDifficulty()">
+            <option value="easy" selected>Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <div class="score">Score: <span id="score">0</span></div>
+        <h2>Match this color:</h2>
+        <div id="targetColor" class="color-box"></div>
+        <div id="userColor" class="color-box" style="background-color: rgb(0, 0, 0);"></div>
+        <p>Adjust the sliders to match the color above:</p>
+        <div>
+            <label for="red">Red: </label>
+            <input type="range" id="red" min="0" max="255" value="0" oninput="updateColor()">
+        </div>
+        <div>
+            <label for="green">Green: </label>
+            <input type="range" id="green" min="0" max="255" value="0" oninput="updateColor()">
+        </div>
+        <div>
+            <label for="blue">Blue: </label>
+            <input type="range" id="blue" min="0" max="255" value="0" oninput="updateColor()">
+        </div>
+        <button onclick="submitGuess()">Submit Guess</button>
+        <button onclick="resetGame()">Next Round</button>
+        <p id="message"></p>
+    </div>
+    <footer>
+        <p>&copy; 2024 Fun Games Inc. Keep matching those colors!</p>
+    </footer>
+    <script>
+        let targetColor = { r: 0, g: 0, b: 0 };
+        let score = 0;
+        let maxDifference = 50; // Tolerance level
+
+        const targetDiv = document.getElementById('targetColor');
+        const userDiv = document.getElementById('userColor');
+        const scoreDisplay = document.getElementById('score');
+        const message = document.getElementById('message');
+
+        function generateTargetColor() {
+            targetColor.r = Math.floor(Math.random() * 256);
+            targetColor.g = Math.floor(Math.random() * 256);
+            targetColor.b = Math.floor(Math.random() * 256);
+            targetDiv.style.backgroundColor = `rgb(${targetColor.r}, ${targetColor.g}, ${targetColor.b})`;
+        }
+
+        function updateColor() {
+            const red = document.getElementById('red').value;
+            const green = document.getElementById('green').value;
+            const blue = document.getElementById('blue').value;
+            userDiv.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+        }
+
+        function submitGuess() {
+            const red = parseInt(document.getElementById('red').value, 10);
+            const green = parseInt(document.getElementById('green').value, 10);
+            const blue = parseInt(document.getElementById('blue').value, 10);
+
+            const diffR = Math.abs(red - targetColor.r);
+            const diffG = Math.abs(green - targetColor.g);
+            const diffB = Math.abs(blue - targetColor.b);
+
+            if (diffR <= maxDifference && diffG <= maxDifference && diffB <= maxDifference) {
+                score += 10;
+                message.textContent = "🎉 Correct! You earned 10 points!";
+                message.style.color = "green";
+            } else {
+                message.textContent = "❌ Too far off. Try again!";
+                message.style.color = "red";
+            }
+
+            scoreDisplay.textContent = score;
+        }
+
+        function resetGame() {
+            generateTargetColor();
+            document.getElementById('red').value = 0;
+            document.getElementById('green').value = 0;
+            document.getElementById('blue').value = 0;
+            userDiv.style.backgroundColor = "rgb(0, 0, 0)";
+            message.textContent = "";
+        }
+
+        function setDifficulty() {
+            const difficulty = document.getElementById('difficulty').value;
+            if (difficulty === "easy") {
+                maxDifference = 50;
+            } else if (difficulty === "medium") {
+                maxDifference = 30;
+            } else {
+                maxDifference = 15;
+            }
+            resetGame();
+        }
+
+        generateTargetColor();
+    </script>
+</body>
+</html>
